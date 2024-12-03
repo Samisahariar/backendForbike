@@ -16,7 +16,6 @@ This is express project using Express with the TypeScript ,integrating the Mongo
  - [Mongoose](https://mongoosejs.com/)
 
 
-
 ## API Reference
 
 #### Create Data into the Database

@@ -27,6 +27,6 @@ exports.carValidationSchema = zod_1.z.object({
     inStock: zod_1.z.boolean({
         message: 'This field should be an true or false value !!',
     }),
-    isDeleted: zod_1.z.boolean({ message: "the field should be an boolean data !!" }).default(false),
+    isDeleted: zod_1.z.boolean({ message: "the field should be an boolean data !!" }).default(false)
 });
 exports.default = exports.carValidationSchema;

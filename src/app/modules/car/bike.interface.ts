@@ -10,8 +10,10 @@ export type Tcar = {
   inStock: boolean
   created_at?: Date
   updated_at?: Date
-  isDeleted: boolean
+  isDeleted ? : boolean
 }
+
+
 
 export type TOrder = {
   email: string
@@ -22,8 +24,11 @@ export type TOrder = {
   updated_at?: Date
 }
 
+
 export interface CarExistsMethods {
   isCarExists(name: string): Promise<Tcar | null>
 }
 
-export type CarModel = Model<Tcar, Record<string, never>, CarExistsMethods>
+
+
+export type BikeModel = Model<Tcar, Record<string, never>, CarExistsMethods>

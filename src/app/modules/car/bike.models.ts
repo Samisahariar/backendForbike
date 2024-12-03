@@ -1,7 +1,8 @@
 import { model, Schema } from 'mongoose'
-import { CarExistsMethods, CarModel, Tcar, TOrder } from './bike.interface'
+import { BikeModel, CarExistsMethods, Tcar, TOrder } from './bike.interface'
 
-const carSchema = new Schema<Tcar, CarModel, CarExistsMethods>(
+
+const bikeSchema = new Schema<Tcar, BikeModel, CarExistsMethods>(
   {
     name: {
       type: String,
@@ -16,7 +17,9 @@ const carSchema = new Schema<Tcar, CarModel, CarExistsMethods>(
       required: true,
     },
     category: {
+      
       type: String,
+
       enum: ['Mountain', 'Road', 'Hybrid', 'Electric'],
     },
     description: {
@@ -37,7 +40,7 @@ const carSchema = new Schema<Tcar, CarModel, CarExistsMethods>(
     isDeleted: {
       type: Boolean,
       default: false,
-    },
+    }
   },
   {
     toJSON: {
@@ -67,7 +70,7 @@ const orderSchema = new Schema<TOrder>({
   updated_at: { type: Date },
 })
 
-carSchema.pre('save', function (next) {
+bikeSchema.pre('save', function (next) {
   if (!this.created_at) {
     this.created_at = new Date()
   }
@@ -84,39 +87,39 @@ orderSchema.pre('save', function (next) {
   next()
 })
 
-carSchema.pre('find', function (next) {
+bikeSchema.pre('find', function (next) {
   this.find({ isDeleted: { $ne: true } })
   next()
 })
 
-carSchema.pre('findOne', function (next) {
+bikeSchema.pre('findOne', function (next) {
   this.findOne({ isDeleted: { $ne: true } })
   next()
 })
 
-carSchema.pre('aggregate', function (next) {
+bikeSchema.pre('aggregate', function (next) {
   this.pipeline().unshift({ $match: { isDeleted: { $ne: true } } })
   next()
 })
 
-carSchema.set('toJSON', {
+bikeSchema.set('toJSON', {
   transform: (doc, ret) => {
     ret._id = ret._id.toString() // Convert ObjectId to string
     delete ret.id // Remove id field
     return ret
   },
 })
-/* carSchema.post('aggregate', function (doc, next) {
+/* bikeSchema.post('aggregate', function (doc, next) {
   console.log(doc)
   next()
 }) */
 
-carSchema.set('toJSON', { virtuals: true })
-carSchema.set('toObject', { virtuals: true })
+bikeSchema.set('toJSON', { virtuals: true })
+bikeSchema.set('toObject', { virtuals: true })
 
-/* carSchema.virtual('update_at').get(function () {
+/* bikeSchema.virtual('update_at').get(function () {
   return new Date()
 }) */
 
 export const Orders = model<TOrder>('order', orderSchema)
-export const Cars = model<Tcar, CarModel>('car', carSchema)
+export const Cars = model<Tcar, BikeModel>('car', bikeSchema)

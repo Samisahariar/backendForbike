@@ -16,13 +16,15 @@ exports.OrderController = exports.BikeController = void 0;
 const bike_validation_1 = __importDefault(require("./bike.validation"));
 const bike_sevices_1 = require("./bike.sevices");
 const order_validation_1 = __importDefault(require("./order.validation"));
+const zod_1 = require("zod");
 const createBikeData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let bike;
     try {
-        const { car } = req.body;
+        bike = req.body.bike;
         // Validate and parse the input data
-        const parsedCarValidationData = bike_validation_1.default.parse(car);
+        const parsedBikeValidationData = bike_validation_1.default.parse(bike);
         // Save the parsed data to the database
-        const result = yield bike_sevices_1.CarServices.createCarInDB(parsedCarValidationData);
+        const result = yield bike_sevices_1.BikeServices.createCarInDB(parsedBikeValidationData);
         res.status(200).json({
             message: 'Bike Created Successfully !',
             status: true,
@@ -30,13 +32,36 @@ const createBikeData = (req, res) => __awaiter(void 0, void 0, void 0, function*
         });
     }
     catch (err) {
-        const error = err;
-        res.status(400).json({
-            status: false,
-            message: error.message ||
-                'something went wrong when data is inserted to the database !!',
-            error: err,
-        });
+        if (err instanceof zod_1.z.ZodError) {
+            const restOftheError = {};
+            err.errors.forEach(eachError => {
+                /* const value: number | string = Object(eachError).recevied */
+                const errorType = eachError.code === 'too_small' ? 'min' : eachError.code;
+                const field = String(eachError.path[0]);
+                restOftheError[`${field}`] = {
+                    message: eachError.message,
+                    name: 'validation Error',
+                    properties: {
+                        message: eachError.message,
+                        type: errorType,
+                        min: errorType === 'min' ? 0 : undefined,
+                    },
+                    kind: errorType,
+                    path: field,
+                    value: bike[field],
+                };
+            });
+            const formatedError = {
+                message: 'validation Failed !',
+                success: false,
+                error: {
+                    name: 'validation failed',
+                    errors: restOftheError,
+                },
+                stack: err.stack,
+            };
+            res.status(400).json(formatedError);
+        }
     }
 });
 //get all the cars api call is here and all the code
@@ -49,7 +74,7 @@ const getAllTheCarController = (req, res) => __awaiter(void 0, void 0, void 0, f
                 query[key] = value;
             }
         });
-        const result = yield bike_sevices_1.CarServices.getAllTheBikes(query);
+        const result = yield bike_sevices_1.BikeServices.getAllTheBikes(query);
         res.status(200).json({
             message: 'Bikes retrieved  succesfully !!',
             status: true,
@@ -70,7 +95,7 @@ const getAllTheCarController = (req, res) => __awaiter(void 0, void 0, void 0, f
 const getTheSingleBIke = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const result = yield bike_sevices_1.CarServices.getSingleBike(id);
+        const result = yield bike_sevices_1.BikeServices.getSingleBike(id);
         res.status(200).json({
             message: 'Bikes retrieved  succesfully !!',
             status: true,
@@ -79,12 +104,13 @@ const getTheSingleBIke = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
     catch (err) {
         const error = err;
-        res.status(400).json({
-            status: false,
-            message: error.message ||
-                'something went wrong when data is rethriving from the database !!',
-            error: err,
-        });
+        if (error.name == 'ZodError') {
+            res.status(400).json({
+                message: 'Validation Failed',
+                status: false,
+                error: error,
+            });
+        }
     }
 });
 ///update a single bike
@@ -92,7 +118,7 @@ const updateSingleBike = (req, res) => __awaiter(void 0, void 0, void 0, functio
     try {
         const { id } = req.params;
         const toUpdate = req.body;
-        const result = yield bike_sevices_1.CarServices.updataSingleBike(id, toUpdate);
+        const result = yield bike_sevices_1.BikeServices.updataSingleBike(id, toUpdate);
         res.status(200).json({
             message: 'updated Succesfully !!',
             status: true,
@@ -113,7 +139,7 @@ const updateSingleBike = (req, res) => __awaiter(void 0, void 0, void 0, functio
 const deleteSingleDataController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const result = yield bike_sevices_1.CarServices.deleteSingleBike(id);
+        const result = yield bike_sevices_1.BikeServices.deleteSingleBike(id);
         res.status(200).json({
             message: 'Bike destatusfully !!',
             status: true,
@@ -131,8 +157,9 @@ const deleteSingleDataController = (req, res) => __awaiter(void 0, void 0, void 
 });
 //order create in the database alongwith the product details
 const createOrderController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let order;
     try {
-        const { order } = req.body;
+        order = req.body.order;
         const validateOrderData = order_validation_1.default.parse(order);
         const result = yield bike_sevices_1.OrderServices.orderCreate(validateOrderData);
         res.status(200).json({
@@ -142,12 +169,42 @@ const createOrderController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         });
     }
     catch (err) {
-        const error = err;
-        res.status(400).json({
-            message: error.message || 'something wrong !',
-            status: false,
-            error: err,
-        });
+        if (err instanceof zod_1.z.ZodError) {
+            const restOftheError = {};
+            err.errors.forEach(eachError => {
+                /* const value: number | string = Object(eachError).recevied */
+                const errorType = eachError.code === 'too_small' ? 'min' : eachError.code;
+                const field = String(eachError.path[0]);
+                restOftheError[`${field}`] = {
+                    message: eachError.message,
+                    name: 'validation Error',
+                    properties: {
+                        message: eachError.message,
+                        type: errorType,
+                        min: errorType === 'min' ? 0 : undefined,
+                    },
+                    kind: errorType,
+                    path: field,
+                    value: order[field]
+                };
+            });
+            const formatedError = {
+                message: 'validation Failed !',
+                success: false,
+                error: {
+                    name: 'validation failed',
+                    errors: restOftheError,
+                },
+                stack: err.stack,
+            };
+            res.status(400).json(formatedError);
+        }
+        else {
+            res.status(500).json({
+                message: "internaml ServerError",
+                status: false,
+            });
+        }
     }
 });
 //returns only the revenues here is the api !!
@@ -156,8 +213,8 @@ const returnRevenuseController = (req, res) => __awaiter(void 0, void 0, void 0,
         const result = yield bike_sevices_1.OrderServices.returnRevenuseServices();
         if (result.status) {
             res.status(400).json({
-                messsage: "There is no specific data relatedd to this id",
-                status: false
+                messsage: 'There is no specific data relatedd to this id',
+                status: false,
             });
         }
         res.status(200).json({

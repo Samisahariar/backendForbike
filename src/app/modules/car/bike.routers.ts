@@ -1,8 +1,10 @@
 import express from 'express'
 import { BikeController, OrderController } from './bike.controller'
 
+
 const router = express.Router()
 const router2 = express.Router()
+
 
 router.post('/', BikeController.createBikeData)
 

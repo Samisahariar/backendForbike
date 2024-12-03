@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Cars = exports.Orders = void 0;
 const mongoose_1 = require("mongoose");
-const carSchema = new mongoose_1.Schema({
+const bikeSchema = new mongoose_1.Schema({
     name: {
         type: String,
         required: true,
@@ -37,7 +37,7 @@ const carSchema = new mongoose_1.Schema({
     isDeleted: {
         type: Boolean,
         default: false,
-    },
+    }
 }, {
     toJSON: {
         virtuals: true,
@@ -63,7 +63,7 @@ const orderSchema = new mongoose_1.Schema({
     created_at: { type: Date, default: new Date() },
     updated_at: { type: Date },
 });
-carSchema.pre('save', function (next) {
+bikeSchema.pre('save', function (next) {
     if (!this.created_at) {
         this.created_at = new Date();
     }
@@ -77,33 +77,33 @@ orderSchema.pre('save', function (next) {
     this.updated_at = new Date();
     next();
 });
-carSchema.pre('find', function (next) {
+bikeSchema.pre('find', function (next) {
     this.find({ isDeleted: { $ne: true } });
     next();
 });
-carSchema.pre('findOne', function (next) {
+bikeSchema.pre('findOne', function (next) {
     this.findOne({ isDeleted: { $ne: true } });
     next();
 });
-carSchema.pre('aggregate', function (next) {
+bikeSchema.pre('aggregate', function (next) {
     this.pipeline().unshift({ $match: { isDeleted: { $ne: true } } });
     next();
 });
-carSchema.set('toJSON', {
+bikeSchema.set('toJSON', {
     transform: (doc, ret) => {
         ret._id = ret._id.toString(); // Convert ObjectId to string
         delete ret.id; // Remove id field
         return ret;
     },
 });
-/* carSchema.post('aggregate', function (doc, next) {
+/* bikeSchema.post('aggregate', function (doc, next) {
   console.log(doc)
   next()
 }) */
-carSchema.set('toJSON', { virtuals: true });
-carSchema.set('toObject', { virtuals: true });
-/* carSchema.virtual('update_at').get(function () {
+bikeSchema.set('toJSON', { virtuals: true });
+bikeSchema.set('toObject', { virtuals: true });
+/* bikeSchema.virtual('update_at').get(function () {
   return new Date()
 }) */
 exports.Orders = (0, mongoose_1.model)('order', orderSchema);
-exports.Cars = (0, mongoose_1.model)('car', carSchema);
+exports.Cars = (0, mongoose_1.model)('car', bikeSchema);

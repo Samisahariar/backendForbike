@@ -30,7 +30,6 @@ const returnRevenuseServices = async () => {
       },
     },
   ])
-
   return result[0]
 }
 
@@ -39,6 +38,7 @@ const orderCreate = async (reqBody: OrderType) => {
   const objectid = new mongoose.Types.ObjectId(reqBody.product);
 
   const result = await Orders.create(reqBody);
+
 
   await Cars.findOneAndUpdate(
     { _id: objectid },
@@ -58,7 +58,6 @@ const orderCreate = async (reqBody: OrderType) => {
     ],
     { new: true },
   )
-
   return result 
 }
 
@@ -68,15 +67,16 @@ const createCarInDB = async (carData: Tcar) => {
     throw Error('car is alread exists!')
   }  */
   const result = await Cars.create(carData)
+
   const sanitizedResult = await Cars.findById(result._id).select('-id')
 
   return sanitizedResult
 }
 
 const getAllTheBikes = async (querys: Record<string, string>) => {
-  const filters: Record<string, string> = { ...querys }
-  const query: Record<string, { $regex: string; $options: string }> = {}
+  const filters: Record<string, string> = { ...querys };
 
+  const query: Record<string, { $regex: string; $options: string }> = {}
   Object.keys(filters).forEach((key: string) => {
     query[key] = { $regex: filters[key], $options: 'i' }
   })
@@ -113,7 +113,7 @@ const deleteSingleBike = async (id: string) => {
   return result
 }
 
-export const CarServices = {
+export const BikeServices = {
   createCarInDB,
   getAllTheBikes,
   getSingleBike,

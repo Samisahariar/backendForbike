@@ -1,32 +1,60 @@
-import {Request, Response } from 'express'
+import { Request, Response } from 'express'
 import carValidationSchema from './bike.validation'
-import { CarServices, OrderServices } from './bike.sevices'
+import { BikeServices, OrderServices } from './bike.sevices'
 import ordervalidationSchema from './order.validation'
-
+import { z } from 'zod'
 
 const createBikeData = async (req: Request, res: Response) => {
+  let bike: object
   try {
-    const { car } = req.body
+    bike = req.body.bike
     // Validate and parse the input data
-    const parsedCarValidationData = carValidationSchema.parse(car)
-
+    const parsedBikeValidationData = carValidationSchema.parse(bike)
     // Save the parsed data to the database
-    const result = await CarServices.createCarInDB(parsedCarValidationData)
+    const result = await BikeServices.createCarInDB(parsedBikeValidationData)
 
     res.status(200).json({
       message: 'Bike Created Successfully !',
       status: true,
       data: result,
     })
-  } catch (err: unknown) {
-    const error = err as Error
-    res.status(400).json({
-      status: false,
-      message:
-        error.message ||
-        'something went wrong when data is inserted to the database !!',
-      error: err,
-    })
+  } catch (err: any) {
+    if (err instanceof z.ZodError) {
+      const restOftheError: Record<string, any> = {}
+
+      err.errors.forEach(eachError => {
+        /* const value: number | string = Object(eachError).recevied */
+
+        const errorType =
+          eachError.code === 'too_small' ? 'min' : eachError.code
+
+        const field = String(eachError.path[0])
+
+        restOftheError[`${field}`] = {
+          message: eachError.message,
+          name: 'validation Error',
+          properties: {
+            message: eachError.message,
+            type: errorType,
+            min: errorType === 'min' ? 0 : undefined,
+          },
+          kind: errorType,
+          path: field,
+          value: bike[field],
+        }
+      })
+
+      const formatedError = {
+        message: 'validation Failed !',
+        success: false,
+        error: {
+          name: 'validation failed',
+          errors: restOftheError,
+        },
+        stack: err.stack,
+      }
+      res.status(400).json(formatedError)
+    }
   }
 }
 
@@ -40,7 +68,7 @@ const getAllTheCarController = async (req: Request, res: Response) => {
         query[key] = value
       }
     })
-    const result = await CarServices.getAllTheBikes(query)
+    const result = await BikeServices.getAllTheBikes(query)
     res.status(200).json({
       message: 'Bikes retrieved  succesfully !!',
       status: true,
@@ -63,7 +91,7 @@ const getAllTheCarController = async (req: Request, res: Response) => {
 const getTheSingleBIke = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const result = await CarServices.getSingleBike(id)
+    const result = await BikeServices.getSingleBike(id)
 
     res.status(200).json({
       message: 'Bikes retrieved  succesfully !!',
@@ -73,13 +101,13 @@ const getTheSingleBIke = async (req: Request, res: Response) => {
   } catch (err) {
     const error = err as Error
 
-    res.status(400).json({
-      status: false,
-      message:
-        error.message ||
-        'something went wrong when data is rethriving from the database !!',
-      error: err,
-    })
+    if (error.name == 'ZodError') {
+      res.status(400).json({
+        message: 'Validation Failed',
+        status: false,
+        error: error,
+      })
+    }
   }
 }
 
@@ -88,13 +116,12 @@ const updateSingleBike = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const toUpdate = req.body
-    const result = await CarServices.updataSingleBike(id, toUpdate);
+    const result = await BikeServices.updataSingleBike(id, toUpdate)
     res.status(200).json({
       message: 'updated Succesfully !!',
       status: true,
       data: result,
     })
-    
   } catch (err: unknown) {
     const error = err as Error
 
@@ -112,7 +139,7 @@ const updateSingleBike = async (req: Request, res: Response) => {
 const deleteSingleDataController = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const result = await CarServices.deleteSingleBike(id)
+    const result = await BikeServices.deleteSingleBike(id)
     res.status(200).json({
       message: 'Bike destatusfully !!',
       status: true,
@@ -130,34 +157,73 @@ const deleteSingleDataController = async (req: Request, res: Response) => {
 
 //order create in the database alongwith the product details
 const createOrderController = async (req: Request, res: Response) => {
+  let order: object
   try {
-    const { order } = req.body;
-
-    const validateOrderData = ordervalidationSchema.parse(order);
-    const result = await OrderServices.orderCreate(validateOrderData);
+    order  = req.body.order
+    const validateOrderData = ordervalidationSchema.parse(order)
+    const result = await OrderServices.orderCreate(validateOrderData)
 
     res.status(200).json({
       message: 'order created succesfully !!',
       status: true,
       data: result,
     })
+
   } catch (err) {
-    const error = err as Error
-    res.status(400).json({
-      message: error.message || 'something wrong !',
-      status: false,
-      error: err,
-    })
+    if (err instanceof z.ZodError) {
+      const restOftheError: Record<string, any> = {}
+
+      err.errors.forEach(eachError => {
+
+        /* const value: number | string = Object(eachError).recevied */
+
+        const errorType =
+          eachError.code === 'too_small' ? 'min' : eachError.code
+
+        const field = String(eachError.path[0])
+
+        restOftheError[`${field}`] = {
+          message: eachError.message,
+          name: 'validation Error',
+          properties: {
+            message: eachError.message,
+            type: errorType,
+            min: errorType === 'min' ? 0 : undefined,
+          },
+          kind: errorType,
+          path: field,
+          value: order[field]
+        }
+      })
+
+      const formatedError = {
+        message: 'validation Failed !',
+        success: false,
+        error: {
+          name: 'validation failed',
+          errors: restOftheError,
+        },
+        stack: err.stack,
+      }
+      res.status(400).json(formatedError)
+    }else{
+      res.status(500).json({
+        message : "internaml ServerError",
+        status : false,
+
+      })
+    }
   }
 }
+
 //returns only the revenues here is the api !!
 const returnRevenuseController = async (req: Request, res: Response) => {
   try {
-    const result = await OrderServices.returnRevenuseServices();
-    if(result.status){
+    const result = await OrderServices.returnRevenuseServices()
+    if (result.status) {
       res.status(400).json({
-        messsage : "There is no specific data relatedd to this id",
-        status : false
+        messsage: 'There is no specific data relatedd to this id',
+        status: false,
       })
     }
     res.status(200).json({

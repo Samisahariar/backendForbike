@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OrderServices = exports.CarServices = void 0;
+exports.OrderServices = exports.BikeServices = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const bike_models_1 = require("./bike.models");
 const returnRevenuseServices = () => __awaiter(void 0, void 0, void 0, function* () {
@@ -96,7 +96,7 @@ const deleteSingleBike = (id) => __awaiter(void 0, void 0, void 0, function* () 
     const result = yield bike_models_1.Cars.updateOne({ _id: objectId }, { isDeleted: true });
     return result;
 });
-exports.CarServices = {
+exports.BikeServices = {
     createCarInDB,
     getAllTheBikes,
     getSingleBike,

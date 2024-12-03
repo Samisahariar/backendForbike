@@ -26,7 +26,7 @@ export const carValidationSchema = z.object({
   inStock: z.boolean({
     message: 'This field should be an true or false value !!',
   }),
-  isDeleted: z.boolean({message : "the field should be an boolean data !!"}).default(false),
+  isDeleted: z.boolean({message : "the field should be an boolean data !!"}).default(false)
 })
 
 
