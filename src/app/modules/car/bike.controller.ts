@@ -7,7 +7,7 @@ import { z } from 'zod'
 const createBikeData = async (req: Request, res: Response) => {
   let bike: object
   try {
-    bike = req.body.bike
+    bike = req.body
     // Validate and parse the input data
     const parsedBikeValidationData = carValidationSchema.parse(bike)
     // Save the parsed data to the database
@@ -159,7 +159,7 @@ const deleteSingleDataController = async (req: Request, res: Response) => {
 const createOrderController = async (req: Request, res: Response) => {
   let order: object
   try {
-    order  = req.body.order
+    order  = req.body
     const validateOrderData = ordervalidationSchema.parse(order)
     const result = await OrderServices.orderCreate(validateOrderData)
 

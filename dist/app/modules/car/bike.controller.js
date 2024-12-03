@@ -20,7 +20,7 @@ const zod_1 = require("zod");
 const createBikeData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let bike;
     try {
-        bike = req.body.bike;
+        bike = req.body;
         // Validate and parse the input data
         const parsedBikeValidationData = bike_validation_1.default.parse(bike);
         // Save the parsed data to the database
@@ -159,7 +159,7 @@ const deleteSingleDataController = (req, res) => __awaiter(void 0, void 0, void 
 const createOrderController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let order;
     try {
-        order = req.body.order;
+        order = req.body;
         const validateOrderData = order_validation_1.default.parse(order);
         const result = yield bike_sevices_1.OrderServices.orderCreate(validateOrderData);
         res.status(200).json({
